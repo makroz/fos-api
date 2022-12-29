@@ -25,13 +25,14 @@ return new class extends Migration
         Schema::create('members', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->string('email')->nullable();
             $table->string('icn')->unique();
-            $table->string('pin',4);
+            $table->string('pin');
             $table->string('password');
-            $table->datetime('register_date');
+            $table->datetime('register_date')->nullable();
             $table->integer('points')->default(0);
             $table->tinyInteger('status')->default(1);
-            $table->foreignId('level_id')->constrained()->default(1);
+            $table->foreignId('level_id')->default(0);
             $table->foreignUuid('sponsor_id', 'members')->nullable();
             $table->timestamps();
         });
@@ -41,10 +42,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->integer('duration')->default(30);
-            $table->tinyInteger('sequense')->default(1);
+            $table->tinyInteger('position')->default(1);
             $table->integer('points')->default(0);
             $table->tinyInteger('status')->default(1);
-            $table->foreignId('level_id')->constrained();
+            $table->foreignId('level_id')->default(1);
             $table->timestamps();
         });
 
@@ -57,7 +58,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default(1);
             $table->foreignUuid('member_id')->constrained();
             $table->foreignId('challenge_id')->constrained();
-            $table->foreignId('level_id')->constrained();
+            $table->foreignId('level_id')->default(1);
             $table->timestamps();
         });
     }

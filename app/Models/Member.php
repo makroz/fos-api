@@ -22,18 +22,13 @@ class Member extends Authenticatable
         'status',
         'level_id',
         'sponsor_id',
-
     ];
 
     protected $hidden = [
         'password',
         'pin',
-        'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
     public $incrementing = false;
 
     protected $keyType = 'uuid';
