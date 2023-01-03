@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\MemberController;
@@ -64,6 +65,7 @@ Route::controller(MemberController::class)->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
   Route::apiResources([
     'levels' => LevelController::class,
+    'tasks' => TaskController::class,
   ]);
   Route::controller(LevelController::class)->group(function () {
     Route::post('levels/listData', 'listData');
