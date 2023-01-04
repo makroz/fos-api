@@ -122,10 +122,10 @@ class Controller extends BaseController
     public function index(Request $request)
     {
         $page     = self::getParam('page', 1,);
-        $perPage  = self::getParam('per_page', 5);
+        $perPage  = self::getParam('perPage', 5);
         $sortBy   = self::getParam('sortBy', 'id');
-        $order    = self::getParam('order', 'asc');
-        $buscar   = self::getParam('buscar', '');
+        $order    = self::getParam('orderBy', 'asc');
+        $buscar   = self::getParam('searchBy', '');
         $recycled = $request->recycled;
         $cols     = $request->cols ?? ['*'];
         $disabled = $request->disabled;
