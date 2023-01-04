@@ -94,7 +94,14 @@ class Controller extends BaseController
             'success' => true,
         ];
         if (!empty($message)) {
-            $response['message'] = $message;
+            //si es un array
+            if (is_array($message)) {
+                foreach ($message as $key => $value) {
+                    $response[$key] = $value;
+                }
+            } else {
+                $response['message'] = $message;
+            }
         }
 
         if (!empty($result)) {
@@ -104,17 +111,20 @@ class Controller extends BaseController
         return response()->json($response, $code);
     }
 
-    public function sendError($error, $errorMessages = [], $code = 404)
+    public function sendError($message, $errors = [], $code = 404)
     {
         $response = [
             'success' => false,
-            'message' => $error,
-            'Debug_Querys' => DB::getQueryLog()
         ];
 
-        if (!empty($errorMessages)) {
-            $response['data'] = $errorMessages;
+        if (!empty($message)) {
+            $response['message'] = $message;
         }
+
+        if (!empty($errors)) {
+            $response['errors'] = $errors;
+        }
+        $response['Debug_Querys'] = DB::getQueryLog();
 
         return response()->json($response, $code);
     }
@@ -138,13 +148,12 @@ class Controller extends BaseController
             $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
         }
         $model = $model->select($cols)->orderBy($sortBy, $order);
-
-        if ($perPage < 1) {
-            $data = $model->get();
-        } else {
-            $data = $model->paginate($perPage, $cols, 'page', $page);
+        $total = $model->count();
+        if ($perPage > 0) {
+            $model = $model->offset(($page - 1) * $perPage)->limit($perPage);
         }
-        return $this->sendResponse($data);
+        $data = $model->get();
+        return $this->sendResponse($data, ['total' => $total]);
     }
 
 
