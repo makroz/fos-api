@@ -117,9 +117,14 @@ class Controller extends BaseController
             'success' => false,
         ];
 
-        if (!empty($errorMessages)) {
-            $response['data'] = $errorMessages;
+        if (!empty($message)) {
+            $response['message'] = $message;
         }
+
+        if (!empty($errors)) {
+            $response['errors'] = $errors;
+        }
+        $response['Debug_Querys'] = DB::getQueryLog();
 
         return response()->json($response, $code);
     }
