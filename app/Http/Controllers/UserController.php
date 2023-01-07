@@ -32,11 +32,8 @@ class UserController extends Controller
         $user->password = bcrypt($password);
         $user->save();
 
-        $success['token'] = $user->createToken(env('APP_KEY', 'Fos'))->plainTextToken;
-        //$success['user']  = $user;
-        $success['status']  = 'ok';
-
-        return $this->sendResponse($success, 'User Register Succesfull');
+        $token = $user->createToken(env('APP_KEY', 'Referidos'))->plainTextToken;
+        return response()->json(['token' => $token], 201);
     }
 
     public function login(Request $request)
@@ -46,16 +43,17 @@ class UserController extends Controller
 
         if (Auth::guard('api')->attempt(['email' => $email, 'password' => $password])) {
             $user             = Auth::guard('api')->user();
-            $success['token'] = $user->createToken(env('APP_KEY', 'Fos'))->plainTextToken;
+            $success['token'] = $user->createToken(env('APP_KEY', 'Referidos'))->plainTextToken;
             $success['user']  = $user;
-            //   $success['status']  = 'ok';
+            $success['status']  = 'ok';
 
 
             // Devuelve el token al cliente
             return $this->sendResponse($success, 'Login successfull');
         }
+
         // La autenticación ha fallado
-        return $this->sendError('Incorrect Access', null, 400);
+        return $this->sendError('Incorrect Access', ['email' => 'Credentials Invalid'], 200);
     }
 
     public function logout(Request $request)
