@@ -137,8 +137,12 @@ class Controller extends BaseController
         $order    = self::getParam('orderBy', 'asc');
         $buscar   = self::getParam('searchBy', '');
         $recycled = $request->recycled;
-        $cols     = $request->cols ?? ['*'];
         $disabled = $request->disabled;
+        $cols     = ['*'];
+        if ($request->cols) {
+            $cols = explode(',', $request->cols);
+        }
+
         $model = new $this->__modelo();
         if (!empty($model->relations)) {
             $model->with($model->relations);
