@@ -84,7 +84,7 @@ class MemberController extends Controller
             return $this->sendResponse($success, 'Login member successfull');
         }
         // La autenticación ha fallado
-        return $this->sendError('', ['icn' => 'Incorrect Credentials'], 200);
+        return $this->sendError('Incorrect Access', ['icn' => 'Incorrect Credentials'], 200);
     }
 
     public function logout(Request $request)
