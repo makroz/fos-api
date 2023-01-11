@@ -68,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'levels' => LevelController::class,
         'challenges' => ChallengeController::class,
         'tasks' => TaskController::class,
+        'members' => MemberController::class,
     ]);
     Route::controller(LevelController::class)->group(function () {
         Route::post('levels/listData', 'listData');

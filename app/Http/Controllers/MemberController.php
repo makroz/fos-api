@@ -48,7 +48,7 @@ class MemberController extends Controller
 
     public function login(Request $request)
     {
-        $icn = $request->input('icn');
+        $icn = $request->input('email');
         $password = $request->input('password');
 
 
@@ -99,5 +99,13 @@ class MemberController extends Controller
     public function guard()
     {
         return Auth::guard('member');
+    }
+
+    public function beforeCreate(Request &$request)
+    {
+        $pin = bcrypt(substr($request->input('icn'), 0, 4));
+        $request->merge(['pin' => $pin]);
+        $request->merge(['password' => $pin]);
+        return true;
     }
 }
