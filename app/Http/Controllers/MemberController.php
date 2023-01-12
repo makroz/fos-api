@@ -50,31 +50,38 @@ class MemberController extends Controller
     {
         $icn = $request->input('email');
         $password = $request->input('password');
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|max:15',
+            'password' => 'required|string|min:4',
+        ]);
 
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
 
         if (Auth::guard('member')->attempt(['icn' => $icn, 'password' => $password])) {
             $user             = Auth::guard('member')->user();
             if (empty($user->register_date)) {
                 $user->register_date = date('Y-m-d H:i:s');
                 $user->save();
-                $challenges = Challenge::where('status', 1)->where('level_id', $user->level_id)->orderBy('position', 'asc')->get();
-                $separation = 1;
-                $dateBase = date('Y-m-d', strtotime($user->register_date));
-                foreach ($challenges as $challenge) {
+                // $challenges = Challenge::where('status', 1)->where('level_id', $user->level_id)->orderBy('position', 'asc')->get();
+                // $separation = 1;
+                // $dateBase = date('Y-m-d', strtotime($user->register_date));
+                // foreach ($challenges as $challenge) {
 
-                    for ($i = 0; $i < $challenge->repeat; $i++) {
-                        $dateBase = date('Y-m-d', strtotime($dateBase));
-                        $dateBase .= ' ' . date('H:i:s', strtotime($challenge->time_begin));
-                        $dateBase = date('Y-m-d H:i:s', strtotime('+' . $separation . ' days', strtotime($dateBase)));
-                        Task::create([
-                            'member_id' => $user->id,
-                            'challenge_id' => $challenge->id,
-                            'to_date' => $dateBase,
-                            'lavel_id' => $user->level_id,
-                        ]);
-                        $separation = $challenge->separation;
-                    }
-                }
+                //     for ($i = 0; $i < $challenge->repeat; $i++) {
+                //         $dateBase = date('Y-m-d', strtotime($dateBase));
+                //         $dateBase .= ' ' . date('H:i:s', strtotime($challenge->time_begin));
+                //         $dateBase = date('Y-m-d H:i:s', strtotime('+' . $separation . ' days', strtotime($dateBase)));
+                //         Task::create([
+                //             'member_id' => $user->id,
+                //             'challenge_id' => $challenge->id,
+                //             'to_date' => $dateBase,
+                //             'lavel_id' => $user->level_id,
+                //         ]);
+                //         $separation = $challenge->separation;
+                //     }
+                // }
             }
             $success['token'] = $user->createToken(env('APP_KEY', 'Fos'))->plainTextToken;
             $success['user']  = $user;
@@ -84,7 +91,7 @@ class MemberController extends Controller
             return $this->sendResponse($success, 'Login member successfull');
         }
         // La autenticación ha fallado
-        return $this->sendError('Incorrect Access', ['icn' => 'Incorrect Credentials'], 200);
+        return $this->sendError('Incorrect Access', ['email' => 'Incorrect Credentials'], 200);
     }
 
     public function logout(Request $request)
