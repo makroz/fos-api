@@ -115,4 +115,28 @@ class MemberController extends Controller
         $request->merge(['password' => $pin]);
         return true;
     }
+
+    public function afterCreate(Request $request, $user)
+    {
+        $challenges = Challenge::where('status', 1)->where('level_id', $user->level_id)->orderBy('position', 'asc')->get();
+        $separation = 0;
+        //obtener la fecha del siguiente lunes a partir de hoy
+        $dateBase = date('Y-m-d', strtotime('next monday'));
+        //$dateBase = date('Y-m-d', strtotime($user->register_date));
+        foreach ($challenges as $challenge) {
+
+            for ($i = 0; $i < $challenge->repeat; $i++) {
+                $dateBase = date('Y-m-d', strtotime($dateBase));
+                $dateBase .= ' ' . date('H:i:s', strtotime($challenge->time_begin));
+                $dateBase = date('Y-m-d H:i:s', strtotime('+' . $separation . ' days', strtotime($dateBase)));
+                Task::create([
+                    'member_id' => $user->id,
+                    'challenge_id' => $challenge->id,
+                    'to_date' => $dateBase,
+                    'lavel_id' => $user->level_id,
+                ]);
+                $separation = $challenge->separation;
+            }
+        }
+    }
 }

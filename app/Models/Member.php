@@ -10,39 +10,45 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Member extends Authenticatable
 {
-  use HasApiTokens, HasFactory, Notifiable, HasUuids;
+    use HasApiTokens, HasFactory, Notifiable, HasUuids;
 
-  protected $with = ['level'];
+    protected $with = ['level', 'sponsor'];
 
-  protected $fillable = [
-    'name',
-    'icn',
-    'pin',
-    'password',
-    'register_date',
-    'points',
-    'status',
-    'level_id',
-    'sponsor_id',
-  ];
+    protected $fillable = [
+        'name',
+        'icn',
+        'pin',
+        'password',
+        'register_date',
+        'points',
+        'status',
+        'level_id',
+        'sponsor_id',
+    ];
 
-  protected $hidden = [
-    'password',
-    'pin',
-  ];
+    protected $hidden = [
+        'password',
+        'pin',
+    ];
 
-  public $incrementing = false;
+    public $incrementing = false;
 
-  protected $keyType = 'uuid';
+    protected $keyType = 'uuid';
 
-  function level()
-  {
-    return $this->belongsTo(Level::class);
-  }
+    function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
 
-  //relacion con la tabla tasks
-  function tasks()
-  {
-    return $this->hasMany(Task::class);
-  }
+    //relacion con la tabla tasks
+    function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    //relacion con la tabla members usando el campo sponsor_id
+    function sponsor()
+    {
+        return $this->belongsTo(Member::class, 'sponsor_id')->select('id', 'icn', 'name', 'level_id');
+    }
 }
