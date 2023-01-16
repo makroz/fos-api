@@ -137,8 +137,11 @@ class Controller extends BaseController
         $order    = self::getParam('orderBy', 'asc');
         $buscar   = self::getParam('searchBy', '');
         $recycled = $request->recycled;
-        $cols     = $request->cols ?? ['*'];
         $disabled = $request->disabled;
+        $cols     = ['*'];
+        if ($request->cols) {
+            $cols = explode(',', $request->cols);
+        }
         $model = new $this->__modelo();
         if (!empty($model->relations)) {
             $model->with($model->relations);
@@ -147,6 +150,11 @@ class Controller extends BaseController
             $busqueda = explode(',', urldecode($buscar) . ',,');
             $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
         }
+        if ($request->relations) {
+          $rel = explode(',', $request->relations);
+          $model = $model->with($rel);
+        }
+
         $model = $model->select($cols)->orderBy($sortBy, $order);
         $total = $model->count();
         if ($perPage > 0) {
@@ -156,11 +164,49 @@ class Controller extends BaseController
         return $this->sendResponse($data, ['total' => $total]);
     }
 
+    public function beforeCreate(Request &$request)
+    {
+        return true;
+    }
+
+    public function afterCreate(Request $request, $data)
+    {
+        return true;
+    }
+
+    public function beforeUpdate(Request &$request, &$id)
+    {
+        return true;
+    }
+
+    public function afterUpdate(Request $request, $data)
+    {
+        return true;
+    }
+
+    public function beforeDelete(Request &$request, &$id)
+    {
+        return true;
+    }
+
+    public function afterDelete(Request $request, $data)
+    {
+        return true;
+    }
 
     public function store(Request $request)
     {
-        $data = $this->__modelo::create($request->all());
-        return $this->sendResponse($data, 'Registro creado con exito');
+        DB::beginTransaction();
+        try {
+            $this->beforeCreate($request);
+            $data = $this->__modelo::create($request->all());
+            $this->afterCreate($request, $data);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return $this->sendError($e->getMessage());
+        }
+        return $this->sendResponse($data->id, 'Registro creado con exito');
     }
 
     public function show(Request $request, $id)
@@ -171,13 +217,32 @@ class Controller extends BaseController
 
     public function update(Request $request, $id)
     {
-        $data = $this->__modelo::where('id', $id)->update($request->all());
+        DB::beginTransaction();
+        try {
+            $this->beforeUpdate($request, $id);
+            $data = $this->__modelo::where('id', $id)->update($request->all());
+            $this->afterUpdate($request, $data);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return $this->sendError($e->getMessage());
+        }
         return $this->sendResponse($data, 'Registro actualizado con exito');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $data = $this->__modelo::where('id', $id)->delete();
+        DB::beginTransaction();
+        try {
+            $this->beforeDelete($request, $id);
+            $data = $this->__modelo::where('id', $id)->delete();
+            $this->afterDelete($request, $data);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return $this->sendError($e->getMessage());
+        }
+
         return $this->sendResponse($data, 'Registro Eliminado con exito');
     }
 
