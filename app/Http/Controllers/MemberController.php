@@ -113,16 +113,17 @@ class MemberController extends Controller
         $pin = bcrypt(substr($request->input('icn'), 0, 4));
         $request->merge(['pin' => $pin]);
         $request->merge(['password' => $pin]);
+        $request->merge(['sponsor_id' => Auth::user()->id]);
         return true;
     }
 
-    public function afterCreate(Request $request, $user)
+    public function afterCreate(Request $request, $data)
     {
-        $challenges = Challenge::where('status', 1)->where('level_id', $user->level_id)->orderBy('position', 'asc')->get();
+        $data->refresh();
+        $challenges = Challenge::where('status', 'A')->where('level_id', $data->level_id)->orderBy('position', 'asc')->get();
         $separation = 0;
         //obtener la fecha del siguiente lunes a partir de hoy
         $dateBase = date('Y-m-d', strtotime('next monday'));
-        //$dateBase = date('Y-m-d', strtotime($user->register_date));
         foreach ($challenges as $challenge) {
 
             for ($i = 0; $i < $challenge->repeat; $i++) {
@@ -130,10 +131,10 @@ class MemberController extends Controller
                 $dateBase .= ' ' . date('H:i:s', strtotime($challenge->time_begin));
                 $dateBase = date('Y-m-d H:i:s', strtotime('+' . $separation . ' days', strtotime($dateBase)));
                 Task::create([
-                    'member_id' => $user->id,
+                    'member_id' => $data->id,
                     'challenge_id' => $challenge->id,
                     'to_date' => $dateBase,
-                    'lavel_id' => $user->level_id,
+                    'lavel_id' => $challenge->level_id,
                 ]);
                 $separation = $challenge->separation;
             }

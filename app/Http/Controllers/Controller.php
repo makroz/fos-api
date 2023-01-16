@@ -150,6 +150,11 @@ class Controller extends BaseController
             $busqueda = explode(',', urldecode($buscar) . ',,');
             $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
         }
+        if ($request->relations) {
+          $rel = explode(',', $request->relations);
+          $model = $model->with($rel);
+        }
+
         $model = $model->select($cols)->orderBy($sortBy, $order);
         $total = $model->count();
         if ($perPage > 0) {

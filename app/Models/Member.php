@@ -51,4 +51,10 @@ class Member extends Authenticatable
     {
         return $this->belongsTo(Member::class, 'sponsor_id')->select('id', 'icn', 'name', 'level_id');
     }
+
+    //relacion inversa con la tabla members usando el campo sponsor_id
+    function referidos()
+    {
+        return $this->hasMany(Member::class, 'sponsor_id');
+    }
 }
