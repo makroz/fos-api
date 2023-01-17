@@ -139,6 +139,7 @@ class Controller extends BaseController
         $recycled = $request->recycled;
         $disabled = $request->disabled;
         $cols     = ['*'];
+
         if ($request->cols) {
             $cols = explode(',', $request->cols);
         }
@@ -151,11 +152,11 @@ class Controller extends BaseController
             $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
         }
         if ($request->relations) {
-          $rel = explode(',', $request->relations);
-          $model = $model->with($rel);
+            $rel = explode(',', $request->relations);
+            $model = $model->with($rel);
         }
-
         $model = $model->select($cols)->orderBy($sortBy, $order);
+        $model = $this->beforeList($request, $model);
         $total = $model->count();
         if ($perPage > 0) {
             $model = $model->offset(($page - 1) * $perPage)->limit($perPage);
@@ -164,32 +165,37 @@ class Controller extends BaseController
         return $this->sendResponse($data, ['total' => $total]);
     }
 
-    public function beforeCreate(Request &$request)
+    public function beforeList(Request $request, $model)
+    {
+        return $model;
+    }
+
+    public function beforeCreate(Request $request)
+    {
+        return $request->all();
+    }
+
+    public function afterCreate(Request $request, $data, $input)
     {
         return true;
     }
 
-    public function afterCreate(Request $request, $data)
+    public function beforeUpdate(Request $request, $id)
+    {
+        return $request->all();
+    }
+
+    public function afterUpdate(Request $request, $data, $input)
     {
         return true;
     }
 
-    public function beforeUpdate(Request &$request, &$id)
+    public function beforeDelete(Request $request, $id)
     {
-        return true;
+        return $request->all();
     }
 
-    public function afterUpdate(Request $request, $data)
-    {
-        return true;
-    }
-
-    public function beforeDelete(Request &$request, &$id)
-    {
-        return true;
-    }
-
-    public function afterDelete(Request $request, $data)
+    public function afterDelete(Request $request, $data, $input)
     {
         return true;
     }
@@ -198,9 +204,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeCreate($request);
-            $data = $this->__modelo::create($request->all());
-            $this->afterCreate($request, $data);
+            $input = $this->beforeCreate($request);
+            $data = $this->__modelo::create($input);
+            $this->afterCreate($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -219,9 +225,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeUpdate($request, $id);
-            $data = $this->__modelo::where('id', $id)->update($request->all());
-            $this->afterUpdate($request, $data);
+            $input = $this->beforeUpdate($request, $id);
+            $data = $this->__modelo::where('id', $id)->update($input);
+            $this->afterUpdate($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -234,9 +240,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeDelete($request, $id);
+            $input = $this->beforeDelete($request, $id);
             $data = $this->__modelo::where('id', $id)->delete();
-            $this->afterDelete($request, $data);
+            $this->afterDelete($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();

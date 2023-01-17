@@ -108,16 +108,17 @@ class MemberController extends Controller
         return Auth::guard('member');
     }
 
-    public function beforeCreate(Request &$request)
+    public function beforeCreate(Request $request)
     {
+        $input = $request->all();
         $pin = bcrypt(substr($request->input('icn'), 0, 4));
-        $request->merge(['pin' => $pin]);
-        $request->merge(['password' => $pin]);
-        $request->merge(['sponsor_id' => Auth::user()->id]);
-        return true;
+        $input['pin'] = $pin;
+        $input['password'] = $pin;
+        $input['sponsor_id'] = Auth::user()->id;
+        return $input;
     }
 
-    public function afterCreate(Request $request, $data)
+    public function afterCreate(Request $request, $data, $input)
     {
         $data->refresh();
         $challenges = Challenge::where('status', 'A')->where('level_id', $data->level_id)->orderBy('position', 'asc')->get();
