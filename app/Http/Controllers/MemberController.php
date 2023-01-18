@@ -114,6 +114,7 @@ class MemberController extends Controller
         $pin = bcrypt(substr($request->input('icn'), 0, 4));
         $input['pin'] = $pin;
         $input['password'] = $pin;
+        $input['name'] = strtolower($input['name']);
         $input['sponsor_id'] = Auth::user()->id;
         return $input;
     }
