@@ -29,7 +29,8 @@ return new class extends Migration
 
         //crear tabla habilities que su id sea un string de 10 caracteres
         Schema::create('abilities', function (Blueprint $table) {
-            $table->string('id', 5)->primary();
+            $table->id();
+            $table->string('name', 10)->unique();
             $table->string('description')->nullable();
             $table->timestamps();
         });
