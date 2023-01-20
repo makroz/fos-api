@@ -2,10 +2,12 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\ChallengeController;
 
 /*
@@ -49,23 +51,12 @@ Route::controller(MemberController::class)->group(function () {
         Route::delete('members/{id}', 'destroy');
     });
 });
-// Rutas Company
-//   Route::controller(CompanyController::class)->group(function () {
-//     Route::post('cia-register', 'register');
-//     Route::post('cia-login', 'login');
-//     Route::middleware('auth:sanctum')->group(function () {
-//       Route::post('cia-logout', 'logout');
-//       Route::get('companies', 'index');
-//       Route::get('companies/{company}', 'show');
-//       Route::put('companies/{company}', 'update');
-//       Route::delete('companies/{company}', 'destroy');
-//     });
-//   });
-
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
         'levels' => LevelController::class,
+        'roles' => RoleController::class,
+        'abilities' => AbilityController::class,
         'challenges' => ChallengeController::class,
         'tasks' => TaskController::class,
         'members' => MemberController::class,
