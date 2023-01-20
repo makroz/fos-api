@@ -85,9 +85,6 @@ class MemberController extends Controller
             }
             $success['token'] = $user->createToken(env('APP_KEY', 'Fos'))->plainTextToken;
             $success['user']  = $user;
-            //   $success['status']  = 'ok';
-
-            // Devuelve el token al cliente
             return $this->sendResponse($success, 'Login member successfull');
         }
         // La autenticación ha fallado
@@ -99,7 +96,6 @@ class MemberController extends Controller
         $request->user()->tokens()->delete();
         Auth::guard('member')->logout();
 
-        // Devuelve una respuesta de éxito al cliente
         return $this->sendResponse('Session Member close successfull');
     }
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
-            $table->string('habilities')->nullable();
+            $table->string('abilities')->nullable();
             $table->char('status', 1)->default('A');
             $table->timestamps();
         });
@@ -25,6 +25,13 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('rol');
             $table->foreignId('role_id')->default(1);
+        });
+
+        //crear tabla habilities que su id sea un string de 10 caracteres
+        Schema::create('abilities', function (Blueprint $table) {
+            $table->string('id', 5)->primary();
+            $table->string('description')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -35,6 +42,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('abilities');
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('role_id');
             $table->string('rol')->default('user');

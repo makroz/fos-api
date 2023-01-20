@@ -31,4 +31,9 @@ class User extends Authenticatable
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }
