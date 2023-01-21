@@ -13,6 +13,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
     protected $guard = 'api';
+    protected $with = ['role'];
     protected $fillable = [
         'name',
         'email',
@@ -34,6 +35,6 @@ class User extends Authenticatable
 
     public function role()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(Role::class)->select('id', 'name', 'abilities');
     }
 }
