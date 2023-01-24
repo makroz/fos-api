@@ -32,10 +32,6 @@ Route::controller(UserController::class)->group(function () {
     Route::post('admin-login', 'login');
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('admin-logout', 'logout');
-        Route::get('users', 'index');
-        Route::get('users/{id}', 'show');
-        Route::put('users/{id}', 'update');
-        Route::delete('users/{id}', 'destroy');
     });
 });
 
@@ -45,10 +41,6 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('member-login', 'login');
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('member-logout', 'logout');
-        Route::get('members', 'index');
-        Route::get('members/{id}', 'show');
-        Route::put('members/{id}', 'update');
-        Route::delete('members/{id}', 'destroy');
     });
 });
 
@@ -60,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'challenges' => ChallengeController::class,
         'tasks' => TaskController::class,
         'members' => MemberController::class,
+        'users' => UserController::class,
     ]);
     Route::controller(LevelController::class)->group(function () {
         Route::post('levels/listData', 'listData');
