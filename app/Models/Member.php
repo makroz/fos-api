@@ -12,7 +12,7 @@ class Member extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
 
-    protected $with = ['level', 'referidos'];
+    protected $with = ['level'];
 
     protected $fillable = [
         'name',
@@ -55,6 +55,6 @@ class Member extends Authenticatable
     //relacion inversa con la tabla members usando el campo sponsor_id
     function referidos()
     {
-        return $this->hasMany(Member::class, 'sponsor_id');
+        return $this->hasMany(Member::class, 'sponsor_id')->with('referidos');
     }
 }
