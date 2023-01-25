@@ -57,4 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(LevelController::class)->group(function () {
         Route::post('levels/listData', 'listData');
     });
+    Route::controller(TaskController::class)->group(function () {
+        Route::get('tasks-today', 'tasksToday');
+    });
 });

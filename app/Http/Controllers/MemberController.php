@@ -72,7 +72,7 @@ class MemberController extends Controller
     public function afterCreate(Request $request, $data, $input)
     {
         $data->refresh();
-        $challenges = Challenge::where('status', 'A')->where('level_id', $data->level_id)->orderBy('position', 'asc')->get();
+        $challenges = Challenge::where('status', 'A')->where('level_id', 1)->orderBy('position', 'asc')->get();
         $separation = 0;
         //obtener la fecha del siguiente lunes a partir de hoy
         $dateBase = date('Y-m-d', strtotime('next monday'));
@@ -86,7 +86,7 @@ class MemberController extends Controller
                     'member_id' => $data->id,
                     'challenge_id' => $challenge->id,
                     'to_date' => $dateBase,
-                    'lavel_id' => $challenge->level_id,
+                    'level_id' => 1,
                 ]);
                 $separation = $challenge->separation;
             }
