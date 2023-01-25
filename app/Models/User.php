@@ -13,7 +13,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
     protected $guard = 'api';
-    protected $with = ['role'];
     protected $fillable = [
         'name',
         'email',
