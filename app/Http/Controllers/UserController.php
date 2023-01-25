@@ -49,4 +49,11 @@ class UserController extends Controller
     {
         return Auth::guard($this->_guard);
     }
+
+    public function beforeCreate(Request $request)
+    {
+        $input = $request->all();
+        $input['password'] = bcrypt($request->input('password'));
+        return $input;
+    }
 }
