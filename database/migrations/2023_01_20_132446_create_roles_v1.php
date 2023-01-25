@@ -24,7 +24,7 @@ return new class extends Migration
 
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('rol');
-            $table->foreignId('role_id')->default(1);
+            $table->foreignId('role_id')->default(2);
         });
 
         //crear tabla habilities que su id sea un string de 10 caracteres
