@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
 
         if (DB::table('abilities')->get()->count() == 0) {
             DB::table('abilities')->insert([
+                ['name' => 'home_adm', 'description' => 'Inicio Admin',],
                 ['name' => 'home_ins', 'description' => 'Inicio Instructor',],
                 ['name' => 'home', 'description' => 'Inicio',],
                 ['name' => 'users', 'description' => 'Usuarios',],
