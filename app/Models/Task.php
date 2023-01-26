@@ -19,6 +19,8 @@ class Task extends Model
         'challenge_id',
         'level_id',
         'live_id',
+        'type',
+        'user_id'
     ];
 
     //relacion con la tabla challenges

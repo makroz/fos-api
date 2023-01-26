@@ -7,18 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Challenge extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  protected $fillable = [
-    'name',
-    'description',
-    'time_begin',
-    'duration',
-    'repeat',
-    'separation',
-    'position',
-    'points',
-    'level_id',
-    'status'
-  ];
+    protected $fillable = [
+        'name',
+        'description',
+        'time_begin',
+        'duration',
+        'repeat',
+        'separation',
+        'position',
+        'points',
+        'level_id',
+        'status',
+        'type',
+        'meet_link',
+    ];
 }

@@ -34,6 +34,8 @@ return new class extends Migration
             $table->foreignId('live_id')->nullable();
             $table->datetime('start_date')->nullable();
             $table->datetime('ended_date')->nullable();
+            $table->foreignUuid('user_id')->nullable();
+            $table->char('type', 1)->default('L');
         });
 
         Schema::table('challenges', function (Blueprint $table) {
@@ -50,13 +52,13 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('lives');
-        Schema::table('task', function (Blueprint $table) {
-            $table->dropColumns('live_id',  'start_date', 'ended_date');
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->dropColumn(['live_id',  'start_date', 'ended_date', 'user_id', 'type']);
             $table->string('meet_link')->nullable();
             $table->datetime('executed_date')->nullable();
         });
         Schema::table('challenges', function (Blueprint $table) {
-            $table->dropColumns('type', 'video_link');
+            $table->dropColumn(['type', 'video_link']);
         });
     }
 };

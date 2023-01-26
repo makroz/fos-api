@@ -12,15 +12,12 @@ class LiveController extends Controller
     public function tasksToday(Request $request)
     {
         $task = Task::select(['to_date', 'challenge_id', 'status', 'live_id', DB::raw("COUNT('id') as cant")])
-            ->with([
-                'challenge' => function ($query) {
-                    return $query->where('type', 'L');
-                },
-                'live' => function ($query) use ($request) {
-                    return $query->where('user_id', $request->user()->id);
-                },
-            ])
-            ->where(DB::raw('DATE(to_date)'), date('Y-m-d'))
+            ->where('type', 'L')
+            ->whereDate('to_date', date('Y-m-d'))
+            ->where(function ($query) use ($request) {
+                $query->whereNull('user_id')
+                    ->orWhere('user_id', $request->user()->id);
+            })
             ->groupBy('to_date', 'challenge_id', 'status', 'live_id')
             ->get();
         return $this->sendResponse($task, 'Task today');

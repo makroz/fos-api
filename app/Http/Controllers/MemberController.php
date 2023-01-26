@@ -87,6 +87,7 @@ class MemberController extends Controller
                     'challenge_id' => $challenge->id,
                     'to_date' => $dateBase,
                     'level_id' => 1,
+                    'type' => $challenge->type,
                 ]);
                 $separation = $challenge->separation;
             }
