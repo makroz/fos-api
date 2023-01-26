@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LiveController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
@@ -51,13 +52,15 @@ Route::middleware('auth:sanctum')->group(function () {
         'abilities' => AbilityController::class,
         'challenges' => ChallengeController::class,
         'tasks' => TaskController::class,
+        'lives' => LiveController::class,
         'members' => MemberController::class,
         'users' => UserController::class,
     ]);
     Route::controller(LevelController::class)->group(function () {
         Route::post('levels/listData', 'listData');
     });
-    Route::controller(TaskController::class)->group(function () {
+    Route::controller(LiveController::class)->group(function () {
         Route::get('tasks-today', 'tasksToday');
+        Route::post('tasks-today/{id}', 'meetTask');
     });
 });

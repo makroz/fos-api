@@ -8,16 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Task extends Model
 {
     use HasFactory;
-    public $with = ['challenge'];
+    public $with = ['challenge', 'live'];
     protected $fillable = [
         'to_date',
-        'executed_date',
-        'meet_link',
+        'start_date',
+        'ended_date',
         'points',
         'status',
         'member_id',
         'challenge_id',
         'level_id',
+        'live_id',
     ];
 
     //relacion con la tabla challenges
@@ -36,5 +37,11 @@ class Task extends Model
     function level()
     {
         return $this->belongsTo(Level::class);
+    }
+
+    //relacion con la tabla lives
+    function live()
+    {
+        return $this->belongsTo(Live::class);
     }
 }
