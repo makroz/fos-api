@@ -37,7 +37,8 @@ class MemberController extends Controller
                 $user->save();
             }
             $success['token'] = $user->createToken($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['REMOTE_ADDR'])->plainTextToken;
-            $user->role;
+            // $user->role;
+            $user->sponsor;
             $success['user']  = $user;
             return $this->sendResponse($success, 'Login member successfull');
         }

@@ -56,11 +56,18 @@ Route::middleware('auth:sanctum')->group(function () {
         'members' => MemberController::class,
         'users' => UserController::class,
     ]);
+
+    Route::controller(TaskController::class)->group(function () {
+        Route::post('tasks-begin/{id}', 'beginTask');
+        Route::post('tasks-end/{id}', 'endTask');
+    });
+
     Route::controller(LevelController::class)->group(function () {
         Route::post('levels/listData', 'listData');
     });
     Route::controller(LiveController::class)->group(function () {
         Route::get('tasks-today', 'tasksToday');
-        Route::post('tasks-today/{id}', 'meetTask');
+        Route::post('lives-open/{id}', 'meetLive');
+        Route::post('lives-close/{id}', 'closeLive');
     });
 });

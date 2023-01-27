@@ -23,7 +23,7 @@ class LiveController extends Controller
         return $this->sendResponse($task, 'Task today');
     }
 
-    public function meetTask(Request $request, $id)
+    public function meetLive(Request $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -45,5 +45,21 @@ class LiveController extends Controller
             return $this->sendError($e->getMessage());
         }
         return $this->sendResponse($data, 'Meet Creado');
+    }
+
+    public function closeLive(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $data = Live::where('id', $id)->where('user_id', $request->user()->id)->update([
+                'close_date' => date('Y-m-d H:i:s')
+            ]);
+            $task = Task::where('live_id', $id)->update(['status' => 'C']);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return $this->sendError($e->getMessage());
+        }
+        return $this->sendResponse($data, 'Meet close');
     }
 }
