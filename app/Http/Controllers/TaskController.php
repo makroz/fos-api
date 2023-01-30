@@ -25,7 +25,7 @@ class TaskController extends Controller
     {
         DB::beginTransaction();
         try {
-            $task = Task::where('id', $id)->where('status', 'C')->where('member_id', $request->user()->id)->update(['status' => 'E', 'end_date' => now()]);
+            $task = Task::where('id', $id)->where('status', 'C')->where('member_id', $request->user()->id)->update(['status' => 'E', 'ended_date' => now()]);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
