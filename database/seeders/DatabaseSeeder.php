@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
         // \App\Models\User::factory(10)->create();
         if (DB::table('levels')->get()->count() == 0) {
             DB::table('levels')->insert([
-                ['title' => 'Invited'],
-                ['title' => 'Prospect'],
-                ['title' => 'Member'],
+                ['name' => 'Invited'],
+                ['name' => 'Prospect'],
+                ['name' => 'Member'],
             ]);
         }
 
