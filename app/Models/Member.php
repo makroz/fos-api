@@ -12,7 +12,7 @@ class Member extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
 
-    protected $with = ['level'];
+    // protected $with = ['level'];
 
     protected $fillable = [
         'name',

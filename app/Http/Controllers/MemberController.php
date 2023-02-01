@@ -94,4 +94,10 @@ class MemberController extends Controller
             }
         }
     }
+
+    public function beforeList(Request $request, $query)
+    {
+        $query->where('sponsor_id', Auth::user()->id);
+        return $query;
+    }
 }

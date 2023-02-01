@@ -148,8 +148,18 @@ class Controller extends BaseController
             $model->with($model->relations);
         }
         if (!empty($buscar)) {
-            $busqueda = explode(',', urldecode($buscar) . ',,');
-            $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
+            $busquedas = explode('|', urldecode($buscar) . '|');
+            foreach ($busquedas as $busqueda) {
+                if (empty($busqueda)) {
+                    continue;
+                }
+                $busqueda = explode(',', $busqueda . ',,,');
+                if ($busqueda[3] == '' || $busqueda[3] == 'a') {
+                    $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
+                } else {
+                    $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
+                }
+            }
         }
         if ($request->relations) {
             $rel = explode(',', $request->relations);
