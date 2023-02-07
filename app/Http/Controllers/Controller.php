@@ -129,6 +129,65 @@ class Controller extends BaseController
         return response()->json($response, $code);
     }
 
+    public function search($model, $busquedas, &$inicio, $fin)
+    {
+        $join = '';
+        if ($inicio > 0) {
+            $join = explode(',', $busquedas[$inicio - 1] . ',,,,,,')[3];
+        }
+
+        for ($i = $inicio; $i < $fin; $i++) {
+            $busqueda = $busquedas[$i];
+            if (empty($busqueda)) {
+                continue;
+            }
+            if ($busqueda[4] == '1') {
+                if ($join == '' || $join == 'a') {
+                    $model = $model->where(function ($query) use ($busquedas, &$i, $fin) {
+                        $query = $this->search($query, $busquedas, $i, $fin);
+                    });
+                } else {
+                    $model = $model->orWhere(function ($query) use ($busquedas, &$i, $fin) {
+                        $query = $this->search($query, $busquedas, $i, $fin);
+                    });
+                }
+            }
+
+            $busqueda = $busquedas[$i];
+            if ($i < $fin) {
+                $busqueda = explode(',', $busqueda . ',,,,,,');
+                if ($busqueda[1] == 'l') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+                }
+                if ($busqueda[1] == '!l') {
+                    $busqueda[1] = 'not like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+                }
+                if ($busqueda[1] == 'le') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]);
+                }
+                if ($busqueda[1] == 'lb') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = str_replace('%', '', $busqueda[2]) . '%';
+                }
+            }
+            if ($join == '' || $join == 'a') {
+                $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
+            } else {
+                $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
+            }
+
+            if ($busqueda[5] == '1') {
+                $i++;
+                $inicio = $i;
+                return $model;
+            }
+        }
+        $inicio = $i;
+        return $model;
+    }
     public function index(Request $request)
     {
         $page     = self::getParam('page', 1,);
@@ -149,17 +208,36 @@ class Controller extends BaseController
         }
         if (!empty($buscar)) {
             $busquedas = explode('|', urldecode($buscar) . '|');
-            foreach ($busquedas as $busqueda) {
-                if (empty($busqueda)) {
-                    continue;
-                }
-                $busqueda = explode(',', $busqueda . ',,,');
-                if ($busqueda[3] == '' || $busqueda[3] == 'a') {
-                    $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
-                } else {
-                    $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
-                }
-            }
+            $i = 0;
+            $model = $this->search($model, $busquedas, $i, count($busquedas));
+            // foreach ($busquedas as $busqueda) {
+            //     if (empty($busqueda)) {
+            //         continue;
+            //     }
+            //     $busqueda = explode(',', $busqueda . ',,,,,,');
+            //     if ($busqueda[1] == 'l') {
+            //         $busqueda[1] = 'like';
+            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+            //     }
+            //     if ($busqueda[1] == '!l') {
+            //         $busqueda[1] = 'not like';
+            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+            //     }
+            //     if ($busqueda[1] == 'le') {
+            //         $busqueda[1] = 'like';
+            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]);
+            //     }
+            //     if ($busqueda[1] == 'lb') {
+            //         $busqueda[1] = 'like';
+            //         $busqueda[2] = str_replace('%', '', $busqueda[2]) . '%';
+            //     }
+            //     if ($join == '' || $join == 'a') {
+            //         $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
+            //     } else {
+            //         $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
+            //     }
+            //     $join = $busqueda[3];
+            // }
         }
         if ($request->relations) {
             $rel = explode(',', $request->relations);
