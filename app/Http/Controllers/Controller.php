@@ -132,28 +132,39 @@ class Controller extends BaseController
     public function search($model, $busquedas, &$inicio, $fin)
     {
         $join = '';
-        if ($inicio > 0) {
-            $join = explode(',', $busquedas[$inicio - 1] . ',,,,,,')[3];
-        }
-
         for ($i = $inicio; $i < $fin; $i++) {
+            if ($i > 0) {
+                $join = explode(',', $busquedas[$i - 1] . ',,,,,,')[3];
+            }
             $busqueda = $busquedas[$i];
+            $busqueda = explode(',', $busqueda . ',,,,,,');
             if (empty($busqueda)) {
                 continue;
             }
-            if ($busqueda[4] == '1') {
+
+            if ($busqueda[4] != '' && $i > $inicio) {
                 if ($join == '' || $join == 'a') {
                     $model = $model->where(function ($query) use ($busquedas, &$i, $fin) {
                         $query = $this->search($query, $busquedas, $i, $fin);
+                        $i++;
                     });
                 } else {
                     $model = $model->orWhere(function ($query) use ($busquedas, &$i, $fin) {
                         $query = $this->search($query, $busquedas, $i, $fin);
+                        $i++;
                     });
                 }
+                $inicio = $i;
+                return $model;
             }
 
             $busqueda = $busquedas[$i];
+            if (empty($busqueda)) {
+                continue;
+            }
+            if ($i > 0) {
+                $join = explode(',', $busquedas[$i - 1] . ',,,,,,')[3];
+            }
             if ($i < $fin) {
                 $busqueda = explode(',', $busqueda . ',,,,,,');
                 if ($busqueda[1] == 'l') {
@@ -180,7 +191,6 @@ class Controller extends BaseController
             }
 
             if ($busqueda[5] == '1') {
-                $i++;
                 $inicio = $i;
                 return $model;
             }
@@ -206,45 +216,25 @@ class Controller extends BaseController
         if (!empty($model->relations)) {
             $model->with($model->relations);
         }
-        if (!empty($buscar)) {
-            $busquedas = explode('|', urldecode($buscar) . '|');
-            $i = 0;
-            $model = $this->search($model, $busquedas, $i, count($busquedas));
-            // foreach ($busquedas as $busqueda) {
-            //     if (empty($busqueda)) {
-            //         continue;
-            //     }
-            //     $busqueda = explode(',', $busqueda . ',,,,,,');
-            //     if ($busqueda[1] == 'l') {
-            //         $busqueda[1] = 'like';
-            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
-            //     }
-            //     if ($busqueda[1] == '!l') {
-            //         $busqueda[1] = 'not like';
-            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
-            //     }
-            //     if ($busqueda[1] == 'le') {
-            //         $busqueda[1] = 'like';
-            //         $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]);
-            //     }
-            //     if ($busqueda[1] == 'lb') {
-            //         $busqueda[1] = 'like';
-            //         $busqueda[2] = str_replace('%', '', $busqueda[2]) . '%';
-            //     }
-            //     if ($join == '' || $join == 'a') {
-            //         $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
-            //     } else {
-            //         $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
-            //     }
-            //     $join = $busqueda[3];
-            // }
-        }
+
         if ($request->relations) {
             $rel = explode(',', $request->relations);
             $model = $model->with($rel);
         }
         $model = $model->select($cols)->orderBy($sortBy, $order);
         $model = $this->beforeList($request, $model);
+        if (!empty($buscar)) {
+            $busquedas = explode('|', urldecode($buscar) . '|');
+            $i = 0;
+            $model = $model->where(function ($query) use ($busquedas, &$i) {
+                $query = $this->search($query, $busquedas, $i, count($busquedas));
+                return  $query;
+            });
+            $i++;
+            if ($i <= count($busquedas)) {
+                $model = $this->search($model, $busquedas, $i, count($busquedas));
+            }
+        }
         $total = $model->count();
         if ($perPage > 0) {
             $model = $model->offset(($page - 1) * $perPage)->limit($perPage);
