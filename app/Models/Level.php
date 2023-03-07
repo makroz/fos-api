@@ -9,7 +9,7 @@ class Level extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'title',
+        'name',
         'description',
         'colors',
         'points',
@@ -17,5 +17,4 @@ class Level extends Model
     ];
 
     public $timestamps = false;
-
 }

@@ -17,6 +17,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
     ];
 
     protected $hidden = [
@@ -31,4 +32,9 @@ class User extends Authenticatable
     public $incrementing = false;
 
     protected $keyType = 'uuid';
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class)->select('id', 'name', 'description', 'abilities');
+    }
 }

@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('levels', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('name');
             $table->string('description')->nullable();
-            $table->string('colors')->nullable();
+            $table->string('colors');
             $table->integer('points')->default(0);
             $table->char('status', 1)->default('A');
         });

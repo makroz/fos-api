@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -10,79 +9,51 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
-    public function register(Request $request)
+    public $_guard = 'api';
+
+    public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'email' => 'required|string|email',
+            'password' => 'required|string|min:6',
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error', $validator->errors());
         }
 
-        $name = $request->input('name');
         $email = $request->input('email');
         $password = $request->input('password');
 
-        $user = new User;
-        $user->name = $name;
-        $user->email = $email;
-        $user->password = bcrypt($password);
-        $user->save();
-
-        $token = $user->createToken(env('APP_KEY', 'Referidos'))->plainTextToken;
-        return response()->json(['token' => $token], 201);
-    }
-
-    public function login(Request $request)
-    {
-        $email = $request->input('email');
-        $password = $request->input('password');
-
-        if (Auth::guard('api')->attempt(['email' => $email, 'password' => $password])) {
-            $user             = Auth::guard('api')->user();
-            $success['token'] = $user->createToken(env('APP_KEY', 'Referidos'))->plainTextToken;
+        if (Auth::guard($this->_guard)->attempt(['email' => $email, 'password' => $password])) {
+            $user             = Auth::guard($this->_guard)->user();
+            $success['token'] = $user->createToken($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['REMOTE_ADDR'])->plainTextToken;
+            $user->role;
             $success['user']  = $user;
             $success['status']  = 'ok';
-
-
-            // Devuelve el token al cliente
             return $this->sendResponse($success, 'Login successfull');
         }
-
-        // La autenticación ha fallado
         return $this->sendError('Incorrect Access', ['email' => 'Credentials Invalid'], 200);
     }
 
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        Auth::guard('api')->logout();
+        Auth::guard($this->_guard)->logout();
 
         // Devuelve una respuesta de éxito al cliente
         return $this->sendResponse('Session close successfull');
     }
 
-    public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error', $validator->errors());
-        }
-
-        $input = $request->all();
-        $user = $this->__modelo::where('id', $id)->update($request->all());
-        return $this->sendResponse($user, 'Registro actualizado con exito');
-    }
-
     public function guard()
     {
-        return Auth::guard('api');
+        return Auth::guard($this->_guard);
+    }
+
+    public function beforeCreate(Request $request)
+    {
+        $input = $request->all();
+        $input['password'] = bcrypt($request->input('password'));
+        return $input;
     }
 }

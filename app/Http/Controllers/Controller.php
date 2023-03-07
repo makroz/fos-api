@@ -129,6 +129,75 @@ class Controller extends BaseController
         return response()->json($response, $code);
     }
 
+    public function search($model, $busquedas, &$inicio, $fin)
+    {
+        $join = '';
+        for ($i = $inicio; $i < $fin; $i++) {
+            if ($i > 0) {
+                $join = explode(',', $busquedas[$i - 1] . ',,,,,,')[3];
+            }
+            $busqueda = $busquedas[$i];
+            $busqueda = explode(',', $busqueda . ',,,,,,');
+            if (empty($busqueda)) {
+                continue;
+            }
+
+            if ($busqueda[4] != '' && $i > $inicio) {
+                if ($join == '' || $join == 'a') {
+                    $model = $model->where(function ($query) use ($busquedas, &$i, $fin) {
+                        $query = $this->search($query, $busquedas, $i, $fin);
+                        $i++;
+                    });
+                } else {
+                    $model = $model->orWhere(function ($query) use ($busquedas, &$i, $fin) {
+                        $query = $this->search($query, $busquedas, $i, $fin);
+                        $i++;
+                    });
+                }
+                $inicio = $i;
+                return $model;
+            }
+
+            $busqueda = $busquedas[$i];
+            if (empty($busqueda)) {
+                continue;
+            }
+            if ($i > 0) {
+                $join = explode(',', $busquedas[$i - 1] . ',,,,,,')[3];
+            }
+            if ($i < $fin) {
+                $busqueda = explode(',', $busqueda . ',,,,,,');
+                if ($busqueda[1] == 'l') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+                }
+                if ($busqueda[1] == '!l') {
+                    $busqueda[1] = 'not like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]) . '%';
+                }
+                if ($busqueda[1] == 'le') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = '%' . str_replace('%', '', $busqueda[2]);
+                }
+                if ($busqueda[1] == 'lb') {
+                    $busqueda[1] = 'like';
+                    $busqueda[2] = str_replace('%', '', $busqueda[2]) . '%';
+                }
+            }
+            if ($join == '' || $join == 'a') {
+                $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
+            } else {
+                $model = $model->orWhere($busqueda[0], $busqueda[1], $busqueda[2]);
+            }
+
+            if ($busqueda[5] == '1') {
+                $inicio = $i;
+                return $model;
+            }
+        }
+        $inicio = $i;
+        return $model;
+    }
     public function index(Request $request)
     {
         $page     = self::getParam('page', 1,);
@@ -139,6 +208,7 @@ class Controller extends BaseController
         $recycled = $request->recycled;
         $disabled = $request->disabled;
         $cols     = ['*'];
+
         if ($request->cols) {
             $cols = explode(',', $request->cols);
         }
@@ -146,16 +216,25 @@ class Controller extends BaseController
         if (!empty($model->relations)) {
             $model->with($model->relations);
         }
-        if (!empty($buscar)) {
-            $busqueda = explode(',', urldecode($buscar) . ',,');
-            $model = $model->where($busqueda[0], $busqueda[1], $busqueda[2]);
-        }
-        if ($request->relations) {
-          $rel = explode(',', $request->relations);
-          $model = $model->with($rel);
-        }
 
+        if ($request->relations) {
+            $rel = explode(',', $request->relations);
+            $model = $model->with($rel);
+        }
         $model = $model->select($cols)->orderBy($sortBy, $order);
+        $model = $this->beforeList($request, $model);
+        if (!empty($buscar)) {
+            $busquedas = explode('|', urldecode($buscar) . '|');
+            $i = 0;
+            $model = $model->where(function ($query) use ($busquedas, &$i) {
+                $query = $this->search($query, $busquedas, $i, count($busquedas));
+                return  $query;
+            });
+            $i++;
+            if ($i <= count($busquedas)) {
+                $model = $this->search($model, $busquedas, $i, count($busquedas));
+            }
+        }
         $total = $model->count();
         if ($perPage > 0) {
             $model = $model->offset(($page - 1) * $perPage)->limit($perPage);
@@ -164,32 +243,37 @@ class Controller extends BaseController
         return $this->sendResponse($data, ['total' => $total]);
     }
 
-    public function beforeCreate(Request &$request)
+    public function beforeList(Request $request, $model)
+    {
+        return $model;
+    }
+
+    public function beforeCreate(Request $request)
+    {
+        return $request->all();
+    }
+
+    public function afterCreate(Request $request, $data, $input)
     {
         return true;
     }
 
-    public function afterCreate(Request $request, $data)
+    public function beforeUpdate(Request $request, $id)
+    {
+        return $request->all();
+    }
+
+    public function afterUpdate(Request $request, $data, $input)
     {
         return true;
     }
 
-    public function beforeUpdate(Request &$request, &$id)
+    public function beforeDelete(Request $request, $id)
     {
-        return true;
+        return $request->all();
     }
 
-    public function afterUpdate(Request $request, $data)
-    {
-        return true;
-    }
-
-    public function beforeDelete(Request &$request, &$id)
-    {
-        return true;
-    }
-
-    public function afterDelete(Request $request, $data)
+    public function afterDelete(Request $request, $data, $input)
     {
         return true;
     }
@@ -198,9 +282,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeCreate($request);
-            $data = $this->__modelo::create($request->all());
-            $this->afterCreate($request, $data);
+            $input = $this->beforeCreate($request);
+            $data = $this->__modelo::create($input);
+            $this->afterCreate($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -219,9 +303,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeUpdate($request, $id);
-            $data = $this->__modelo::where('id', $id)->update($request->all());
-            $this->afterUpdate($request, $data);
+            $input = $this->beforeUpdate($request, $id);
+            $data = $this->__modelo::where('id', $id)->update($input);
+            $this->afterUpdate($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -234,9 +318,9 @@ class Controller extends BaseController
     {
         DB::beginTransaction();
         try {
-            $this->beforeDelete($request, $id);
+            $input = $this->beforeDelete($request, $id);
             $data = $this->__modelo::where('id', $id)->delete();
-            $this->afterDelete($request, $data);
+            $this->afterDelete($request, $data, $input);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();

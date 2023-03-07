@@ -5,22 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Challenge extends Model
+class Ability extends Model
 {
     use HasFactory;
+    //indicar que no usa id numerico ni autoincrementable, que solo es string de 5 caracteres
 
     protected $fillable = [
         'name',
         'description',
-        'time_begin',
-        'duration',
-        'repeat',
-        'separation',
-        'position',
-        'points',
-        'level_id',
-        'status',
-        'type',
-        'meet_link',
     ];
 }
