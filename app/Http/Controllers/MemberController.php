@@ -54,6 +54,15 @@ class MemberController extends Controller
         return $this->sendResponse('Session Member close successfull');
     }
 
+    public function iam(Request $request)
+    {
+        $user = Auth::guard(    )->user();
+        //$user->role;
+        $user->sponsor;
+        $success['user']  = $user;
+        return $this->sendResponse($success, 'member details');
+    }
+
     public function guard()
     {
         return Auth::guard($this->_guard);

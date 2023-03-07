@@ -42,6 +42,7 @@ Route::controller(MemberController::class)->group(function () {
     Route::post('member-login', 'login');
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('member-logout', 'logout');
+        Route::post('member-iam', 'iam');
     });
 });
 
